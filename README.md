@@ -133,6 +133,30 @@ The database supports queries involving:
 These allow opportunities to be filtered, compared,
 categorized, and ranked.
 
+## Quick Demo
+
+JobOps includes a fictional candidate profile and job posting so
+the four-agent pipeline can be tested without personal information.
+
+1. Install dependencies:
+
+   ```powershell
+   python -m pip install -r requirements.txt
+   ```
+
+2. Set the OPENAI_API_KEY environment variable.
+
+3. Run the demonstration:
+
+   ```powershell
+   python demo.py
+   ```
+
+The demo runs all four agents and writes example_evaluation.json.
+It does not modify the private job database. Running the agents
+requires OpenAI API credits.
+
+
 ## Local Setup
 
 Requirements:
