@@ -1,0 +1,31 @@
+
+# Python virtual environment
+.venv/
+
+# Python-generated files
+__pycache__/
+*.pyc
+
+# Local databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Private candidate information
+candidate_profile.md
+
+# Original job postings
+job_posting.txt
+
+# Generated evaluations
+latest_evaluation.json
+
+# Environment variables and credentials
+.env
+.env.*
+
+# Editor and operating system files
+.vscode/
+.DS_Store
+Thumbs.db

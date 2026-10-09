@@ -1,0 +1,160 @@
+{
+  "job": {
+    "company": "Northstar Systems (Fictional)",
+    "title": "Business Operations Manager",
+    "url": null,
+    "location": "Remote, United States",
+    "work_arrangement": "Remote",
+    "salary_min": 125000,
+    "salary_max": 155000,
+    "responsibilities": [
+      "Design and improve operational workflows.",
+      "Coordinate cross-functional projects.",
+      "Develop reporting and performance dashboards.",
+      "Improve customer onboarding and internal processes.",
+      "Collaborate with leadership on strategic initiatives.",
+      "Implement automation tools to reduce manual work."
+    ],
+    "required_qualifications": [
+      "3+ years of operations or implementation experience.",
+      "Experience improving organizational processes.",
+      "Strong communication and collaboration skills.",
+      "Experience coordinating cross-functional projects.",
+      "Comfort working independently in ambiguous environments."
+    ],
+    "preferred_qualifications": [
+      "Experience with SQL and operational reporting.",
+      "Experience working at a B2B software company.",
+      "Familiarity with AI tools and workflow automation.",
+      "Experience building dashboards.",
+      "Previous startup experience."
+    ],
+    "technical_requirements": [
+      "SQL",
+      "Operational reporting",
+      "AI tools",
+      "Workflow automation",
+      "Dashboard building"
+    ],
+    "domain_requirements": [
+      "B2B software company experience",
+      "Startup experience"
+    ],
+    "years_of_experience_requirements": [
+      "3+ years of operations or implementation experience"
+    ]
+  },
+  "initial_assessment": {
+    "scores": {
+      "hard_requirements": 25,
+      "work_shape": 23,
+      "relevant_experience": 13,
+      "compensation": 9,
+      "geography": 10,
+      "mission_and_trajectory": 8
+    },
+    "strong_matches": [
+      "3+ years of operations or implementation experience",
+      "Experience improving organizational processes",
+      "Strong communication and collaboration skills",
+      "Experience coordinating cross-functional projects",
+      "Comfort working independently in ambiguous environments",
+      "Design and improve operational workflows",
+      "Coordinate cross-functional projects",
+      "Improve customer onboarding and internal processes",
+      "Collaborate with leadership on strategic initiatives"
+    ],
+    "partial_matches": [
+      "Experience with SQL and operational reporting",
+      "Experience building dashboards",
+      "Experience working at a B2B software company",
+      "Workflow automation"
+    ],
+    "missing_required_qualifications": [],
+    "missing_preferred_qualifications": [
+      "Familiarity with AI tools and workflow automation (only basic automation tools known)",
+      "Previous startup experience"
+    ],
+    "hard_blockers": [],
+    "career_upside": "This role aligns well with the candidate's career objectives in business operations and cross-functional coordination, offering growth in strategic initiatives and workflow automation which can enhance their leadership trajectory.",
+    "compensation_fit": "The job's $125,000-$155,000 salary range fits well within the candidate's preferred $120,000-$150,000 range, representing a strong compensation fit.",
+    "geographic_fit": "The fully remote United States location perfectly matches the candidate's preference for remote work within the US.",
+    "reasoning": "The candidate meets all hard requirements with over 3 years in operations and implementation and demonstrated experience improving processes and cross-functional projects. Their skills in operational workflows, onboarding, and collaboration strongly align with responsibilities. Partial gaps include intermediate SQL and dashboard experience, as the candidate has beginner SQL and no stated dashboard building but relevant related skills. They have no startup experience and limited automation expertise compared to the preferences. Importantly, no hard blockers exist. The candidate's lack of professional software engineering or advanced financial modeling is not disqualifying. Overall, a plausible recruiter would consider this candidate a solid fit with some development areas."
+  },
+  "review": {
+    "revised_scores": {
+      "hard_requirements": 27,
+      "work_shape": 22,
+      "relevant_experience": 12,
+      "compensation": 9,
+      "geography": 10,
+      "mission_and_trajectory": 8
+    },
+    "justified_strengths": [
+      "The candidate has over 3 years of operations and implementation experience fulfilling the mandatory experience requirement.",
+      "Demonstrated experience improving organizational processes through SOPs and workflow improvements.",
+      "Strong communication and cross-functional collaboration evidenced by coordinating onboarding and operational priorities.",
+      "Comfortable working independently in ambiguous environments implied by varied operational roles and responsibilities.",
+      "Direct experience improving customer onboarding and internal processes aligns well with job responsibilities.",
+      "Experience implementing operational software tools and managing CRM systems relevant to automation tasks."
+    ],
+    "disputed_claims": [
+      "Initial assessment treats beginner SQL skills as 'partial match' for required SQL experience; candidate's 'beginner proficiency' is likely below job's implied operational reporting and SQL expectations.",
+      "Dashboard building experience is assumed but not evidenced; candidate has spreadsheet analysis but no explicit dashboard development noted.",
+      "Workflow automation experience in candidate is described as 'basic automation tools' which falls short of preferred 'workflow automation' requirement potentially involving more advanced tools.",
+      "Startup experience is missing, a clearly stated preferred qualification; initial assessment correctly notes absence but initial scores seem generous in related categories."
+    ],
+    "confirmed_hard_blockers": [],
+    "gaps_not_blockers": [
+      "No professional software engineering experience is not a blocker given job focus on operations rather than coding.",
+      "Advanced financial modeling is not mentioned in the job requirements, so absence is not a blocker.",
+      "Domain experience with healthcare or banking not required here; lack thereof not a blocker.",
+      "The candidate's beginner SQL and lack of dashboard building is a gap but not a mandatory blocker, just reducing relevant experience scoring.",
+      "Limited automation skills impact preferred qualifications but do not prevent basic workflow improvements."
+    ],
+    "unresolved_questions": [
+      "Candidate's exact level of SQL and operational reporting skills beyond 'beginner' is unclear and critical for technical fit.",
+      "No explicit examples of dashboard creation or detailed reporting outputs found in profile.",
+      "The extent of candidate's familiarity with AI tools is unknown but presumed absent based on profile.",
+      "Scale of organizations is small; no clarity on whether candidate can manage complexities in larger or startup contexts."
+    ],
+    "recruiter_reality_check": "A reasonable recruiter would consider this candidate a potentially viable fit for the core operations aspects due to clear direct experience meeting mandatory requirements. However, their technical qualifications and preferred startup/software company experience gaps reduce competitiveness for higher or rapidly scaling roles. Without a blocker, this candidate might proceed to early interview rounds primarily for operational fit while technical and domain skills remain a concern.",
+    "review_reasoning": "The candidate clearly fulfills the mandatory 3+ years and core required skills around operations processes, cross-functional projects, and customer onboarding. Their strengths align well with primary job responsibilities and geographic/compensation fit is solid. However, SQL skills are only beginner, and dashboard building or advanced automation evidence is not present, which tempers the relevant experience score. Startup experience and familiarity with AI tools are preferred, and their absence is noted but not disqualifying. The candidate's limitations in technical and domain-specific skills should be explored in the interview stage rather than viewed as hard blockers. The initial assessment's optimistic partial matches on SQL and dashboards may overstate their current capabilities. Overall, the candidate is a reasonable contender for further consideration but with identifiable developmental needs."
+  },
+  "strategy": {
+    "recommendation": "Apply",
+    "recommendation_reason": "The candidate meets all hard requirements with strong demonstrated experience in operations management, process improvement, and cross-functional coordination, perfectly aligned with key job responsibilities. Compensation and geographic preferences match well. Although technical skills in SQL, dashboard building, and advanced automation are limited, these are preferred but not mandatory, and the candidate's strong operational background suggests plausible recruiter interest. No hard blockers exist, supporting a strong apply recommendation.",
+    "strongest_evidence": [
+      "3+ years of operations and implementation experience fulfilling mandatory experience.",
+      "Demonstrated experience improving organizational processes including SOP development and workflow improvements.",
+      "Strong communication and collaboration skills evidenced by coordinating onboarding and operational priorities.",
+      "Experience improving customer onboarding and internal processes aligning well with job responsibilities.",
+      "Comfort working independently in ambiguous environments shown via varied operational roles."
+    ],
+    "biggest_risks": [
+      "Beginner-level SQL skills fall short of preferred operational reporting expectations.",
+      "No explicit dashboard building experience reduces alignment with preferred qualifications.",
+      "Limited familiarity with AI tools and advanced workflow automation compared to job preferences.",
+      "No previous startup experience which is preferred, potentially impacting fit for startup environment.",
+      "Experience mostly in smaller organizations, with uncertain capacity for larger or rapidly scaling company demands."
+    ],
+    "resume_positioning": "Emphasize over 3 years of operations and implementation experience with a focus on process improvement, cross-functional coordination, and system implementations relevant to business operations. Highlight achievements in developing standard operating procedures, improving customer onboarding, and working closely with leadership on operational priorities. De-emphasize beginner technical skills while showcasing strong collaboration and independent working capabilities. Frame spreadsheet analysis and CRM administration as foundations for developing more advanced reporting and automation skills.",
+    "lead_with_experience": "Lead with the Operations Manager role at Example Services Company (2022-2025) as it demonstrates direct experience managing and improving operational workflows, leading cross-functional efforts, and implementing software tools that align closely with the job responsibilities for Business Operations Manager.",
+    "skills_to_develop": [
+      "Intermediate to advanced SQL proficiency with focus on operational reporting.",
+      "Dashboard building skills using tools common in business operations (e.g., Tableau, Power BI, or equivalent).",
+      "Familiarity and practical experience with AI tools and workflow automation platforms beyond basic automation.",
+      "Understanding startup environments and dynamic scaling challenges to better fit preferred domain experience."
+    ],
+    "apply_timing": "Apply now",
+    "questions_to_verify": [
+      "What is the candidate's current level of SQL proficiency beyond beginner?",
+      "Has the candidate ever built or contributed significantly to operational dashboards or similar reporting tools?",
+      "What exposure does the candidate have to AI tools or advanced workflow automation technologies?",
+      "Can the candidate demonstrate ability to manage complexities typical of startup or rapidly growing environments?"
+    ]
+  },
+  "initial_score": 88,
+  "reviewed_score": 88,
+  "recommendation": "Apply"
+}
