@@ -1,7 +1,6 @@
-
 import json
+import re
 from pathlib import Path
-
 from greenhouse_discovery import (
     fetch_greenhouse_jobs,
     normalize_greenhouse_job,
@@ -150,12 +149,34 @@ def priority_score(candidate):
     company, job, geography, travel = candidate
     title = (job.get("title") or "").casefold()
 
+
     score = 0
 
-    # Favor roles that match our target career path.
-    if "business operations" in title:
+    # Prioritize practical work locations.
+    if geography.startswith("Preferred - US remote"):
+        score += 5
+    elif geography.startswith("Preferred - Arizona"):
+        score += 5
+    elif geography.startswith((
+        "Relocation Option - Oregon",
+        "Relocation Option - Washington",
+    )):
+        score += 3
+    elif geography.startswith("Remote - Verify US eligibility"):
+        score += 1
+    elif geography.startswith("Work arrangement unknown"):
+        score -= 3
+
+
+    # Favor roles aligned with the target career path.
+    if "chief of staff" in title:
         score += 6
-    elif "strategy & operations" in title:
+    elif "business operations" in title:
+        score += 6
+    elif (
+        "strategy & operations" in title
+        or "strategy and operations" in title
+    ):
         score += 5
     elif "operations lead" in title or "implementation" in title:
         score += 4
@@ -163,6 +184,11 @@ def priority_score(candidate):
         score += 3
     else:
         score += 1
+
+    # Distinguish operations roles from product management.
+    # Product management is a separate career discipline.
+    if "product manager" in title or "product management" in title:
+        score -= 6
 
     # Flag specialized or unusually senior positions.
     if any(word in title for word in (
@@ -199,6 +225,21 @@ def priority_score(candidate):
         for line in requirements
     ):
         score -= 3
+
+    # Explicit 8+ year experience requirements are a stretch.
+    description_lines = (
+        job.get("descriptionPlain") or ""
+    ).casefold().splitlines()
+
+    if any(
+        re.search(
+            r"\b(?:8|9|1[0-9])\s*\+?\s*years?\b",
+            line,
+        )
+        and "experience" in line
+        for line in description_lines
+    ):
+        score -= 4
 
     # Advanced data-tool proficiency may require further training.
     if any(

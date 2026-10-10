@@ -123,6 +123,7 @@ def geographic_priority(job):
         if "new york" in location or "california" in location:
             return "Location-restricted remote - Verify"
 
+
         us_markers = (
             "united states",
             "usa",
@@ -130,6 +131,8 @@ def geographic_priority(job):
             "remote - us",
             "remote (us)",
             "us (remote)",
+            "remote u.s.",
+            "remote us",
         )
 
         if any(marker in location for marker in us_markers):
@@ -152,24 +155,32 @@ def geographic_priority(job):
     )):
         return "Relocation Option - Washington"
 
-    return "Special Relocation Required"
+    # Check whether Ashby lists a US-remote secondary location.
+    # A hybrid designation still requires manual verification.
+    secondary_locations = job.get("secondaryLocations") or []
 
-    workplace = (job.get("workplaceType") or "").casefold()
-    location = (job.get("location") or "").casefold()
+    remote_us_markers = (
+        "remote (us)",
+        "remote u.s.",
+        "remote us",
+        "remote - us",
+        "us-remote",
+        "remote (united states)",
+    )
 
-    if workplace == "remote":
-        return "Preferred - Remote"
+    for entry in secondary_locations:
+        if not isinstance(entry, dict):
+            continue
 
-    if "arizona" in location or "tucson" in location:
-        return "Preferred - Arizona"
+        secondary_location = (
+            entry.get("location") or ""
+        ).casefold()
 
-    if "oregon" in location or "portland" in location:
-        return "Relocation Option - Oregon"
-
-    if any(city in location for city in (
-        "seattle", "spokane", "tacoma", "bellevue"
-    )):
-        return "Relocation Option - Washington"
+        if any(
+            marker in secondary_location
+            for marker in remote_us_markers
+        ):
+            return "Remote option listed - Verify hybrid requirements"
 
     return "Special Relocation Required"
 
