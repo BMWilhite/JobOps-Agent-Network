@@ -115,6 +115,8 @@ def geographic_priority(job):
         "germany",
         "france",
         "pakistan",
+        "philippines",
+        "hungary",
         "islamabad",
         "lahore",
         "mexico city",
