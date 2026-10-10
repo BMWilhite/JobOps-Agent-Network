@@ -199,11 +199,16 @@ def priority_score(candidate):
     if "product manager" in title or "product management" in title:
         score -= 6
 
-    # Flag specialized or unusually senior positions.
-    if any(word in title for word in (
-        "director", "principal", "staff technical"
+    # Heavily discount roles above the target seniority level.
+    # These remain discoverable, but rank below realistic roles.
+    if any(term in title for term in (
+        "director", "principal", "vice president"
     )):
-        score -= 3
+        score -= 8
+    elif any(term in title for term in (
+        "staff technical", "staff program manager"
+    )):
+        score -= 6
 
     if any(word in title for word in (
         "clinical", "payer", "revenue", "monetization"
@@ -256,6 +261,65 @@ def priority_score(candidate):
         for line in requirements
     ):
         score -= 2
+
+    # Discount explicit advanced SQL requirements.
+    # Optional qualifications should not trigger this penalty.
+    advanced_sql_signals = (
+        "advanced sql",
+        "expert sql",
+        "strong sql",
+        "extensive sql",
+        "sql expertise",
+        "sql proficiency",
+        "proficient in sql",
+        "expertise in sql",
+    )
+
+    optional_signals = (
+        "preferred",
+        "nice to have",
+        "nice-to-have",
+        "bonus",
+        "a plus",
+    )
+
+    if any(
+        any(signal in line for signal in advanced_sql_signals)
+        and not any(
+            optional in line for optional in optional_signals
+        )
+        for line in requirements
+    ):
+        score -= 5
+
+    # Discount specialized industry experience requirements.
+    # Do not penalize optional or preferred qualifications.
+    specialized_domains = (
+        "clinical operations",
+        "clinical strategy",
+        "payer contracting",
+        "payer partnerships",
+        "revenue cycle management",
+        "insurance underwriting",
+    )
+
+    expertise_signals = (
+        "experience",
+        "expertise",
+        "background",
+        "proficiency",
+        "knowledge",
+    )
+
+    if any(
+        any(domain in line for domain in specialized_domains)
+        and any(term in line for term in expertise_signals)
+        and not any(
+            optional in line for optional in optional_signals
+        )
+        for line in requirements
+    ):
+        score -= 5
 
     return score
 
