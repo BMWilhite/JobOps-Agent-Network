@@ -1,5 +1,12 @@
 import json
 import re
+import sqlite3
+from contextlib import closing
+from discovery_history import (
+    ensure_discovery_history_table,
+    classify_discovered_candidates,
+)
+
 from pathlib import Path
 from greenhouse_discovery import (
     fetch_greenhouse_jobs,
@@ -17,7 +24,7 @@ from job_discovery import (
 )
 from job_discovery import format_job_for_evaluation
 from orchestrator import evaluate_job
-from database import initialize_database
+from database import DB_PATH, initialize_database
 from save_evaluation import save_evaluation
 from briefing import show_briefing
 
@@ -254,16 +261,45 @@ def priority_score(candidate):
 if __name__ == "__main__":
     MAX_EVALUATIONS = 2
 
+
     candidates = find_candidates()
-    candidates.sort(key=priority_score, reverse=True)
+
+    # Persist discovery history between separate runs.
+    with closing(sqlite3.connect(DB_PATH)) as connection:
+        with connection:
+            ensure_discovery_history_table(connection)
+
+            new_candidates, seen_candidates = (
+                classify_discovered_candidates(
+                    connection, candidates
+                )
+            )
+
+    print("\n===== DISCOVERY HISTORY =====")
+    print("New to JobOps:", len(new_candidates))
+    print("Previously seen:", len(seen_candidates))
+
+
+    # Show newly discovered jobs first.
+    # Rank jobs within each group by priority.
+    new_candidates.sort(key=priority_score, reverse=True)
+    seen_candidates.sort(key=priority_score, reverse=True)
+
+    candidates = new_candidates + seen_candidates
 
     # Free discovery preview before any AI evaluations.
-    print("\n===== TOP 10 DISCOVERED OPPORTUNITIES =====")
+    print("\n===== TOP 10 OPPORTUNITIES (NEW FIRST) =====")
 
     for rank, candidate in enumerate(candidates[:10], start=1):
         company, job, geography, travel = candidate
 
         print(f"\n{rank}. {company} - {job.get('title')}")
+        status = (
+            "NEW TO JOBOPS"
+            if rank <= len(new_candidates)
+            else "Previously seen"
+        )
+        print(f"   Discovery: {status}")
         print(f"   Compensation: {compensation_priority(job)}")
         print(f"   Geography: {geography}")
         print(f"   Travel: {travel}")
