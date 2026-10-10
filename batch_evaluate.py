@@ -5,6 +5,8 @@ from contextlib import closing
 from discovery_history import (
     ensure_discovery_history_table,
     classify_discovered_candidates,
+    record_displayed_job,
+    partition_displayed_candidates,
 )
 
 from pathlib import Path
@@ -282,23 +284,46 @@ if __name__ == "__main__":
 
     # Show newly discovered jobs first.
     # Rank jobs within each group by priority.
-    new_candidates.sort(key=priority_score, reverse=True)
-    seen_candidates.sort(key=priority_score, reverse=True)
 
-    candidates = new_candidates + seen_candidates
+    # Separate previously discovered jobs by display history.
+    with closing(sqlite3.connect(DB_PATH)) as connection:
+        undisplayed_candidates, displayed_candidates = (
+            partition_displayed_candidates(
+                connection, seen_candidates
+            )
+        )
+
+    # Prioritize new jobs, then jobs not yet shown.
+    new_candidates.sort(key=priority_score, reverse=True)
+    undisplayed_candidates.sort(
+        key=priority_score, reverse=True
+    )
+    displayed_candidates.sort(
+        key=priority_score, reverse=True
+    )
+
+
+    # Daily shortlist includes only jobs not previously shown.
+    # Previously displayed jobs remain saved in SQLite.
+    candidates = new_candidates + undisplayed_candidates
 
     # Free discovery preview before any AI evaluations.
-    print("\n===== TOP 10 OPPORTUNITIES (NEW FIRST) =====")
+    print("\n===== UNSEEN OPPORTUNITIES (UP TO 10) =====")
 
     for rank, candidate in enumerate(candidates[:10], start=1):
         company, job, geography, travel = candidate
 
         print(f"\n{rank}. {company} - {job.get('title')}")
-        status = (
-            "NEW TO JOBOPS"
-            if rank <= len(new_candidates)
-            else "Previously seen"
-        )
+
+        if rank <= len(new_candidates):
+            status = "NEW TO JOBOPS"
+        elif rank <= (
+            len(new_candidates) + len(undisplayed_candidates)
+        ):
+            status = "NOT YET DISPLAYED"
+        else:
+            status = "Previously displayed"
+
         print(f"   Discovery: {status}")
         print(f"   Compensation: {compensation_priority(job)}")
         print(f"   Geography: {geography}")
@@ -308,8 +333,29 @@ if __name__ == "__main__":
             f"{job.get('jobUrl') or job.get('applyUrl') or 'Unavailable'}"
         )
 
+
+    # Remember the jobs actually shown in this briefing.
+    with closing(sqlite3.connect(DB_PATH)) as connection:
+        with connection:
+            ensure_discovery_history_table(connection)
+
+            for _, job, _, _ in candidates[:10]:
+                record_displayed_job(connection, job)
+
+    print(
+        "\nOpportunities displayed this run:",
+        min(10, len(candidates)),
+    )
+
     print("\nThese are preliminary rankings, not AI fit scores.")
 
+    # Skip the selection menu when there are no unseen jobs.
+    if not candidates:
+        print("\nNo new or previously unseen opportunities.")
+        print("All currently eligible postings have been displayed.")
+        print("\nShowing your existing application briefing...")
+        show_briefing()
+        raise SystemExit(0)
 
     print("\n===== SELECT JOBS FOR AI EVALUATION =====")
     print("Choose up to 2 jobs from the Top 10.")
