@@ -49,6 +49,61 @@ fit_analyst = Agent(
     - Geography/work arrangement: 0-10
     - Mission and career trajectory: 0-10
 
+
+    SCORING CALIBRATION:
+    Use these anchors consistently. Scores between anchors
+    are allowed when supported by specific evidence.
+
+    HARD REQUIREMENTS (0-30):
+    - 23-30: Mandatory requirements are substantially supported.
+    - 12-22: Some mandatory requirements are unclear or only
+      partially supported.
+    - 0-11: One or more important mandatory requirements
+      appear genuinely unmet.
+    - Do not penalize missing preferred qualifications here.
+    - Evaluate transferable experience on its actual evidence,
+      not merely whether past job titles match.
+
+    WORK SHAPE (0-25):
+    - 19-25: Strong overlap with the actual responsibilities.
+    - 10-18: Partial overlap requiring meaningful adaptation.
+    - 0-9: Limited overlap with daily responsibilities.
+
+    RELEVANT EXPERIENCE (0-15):
+    - 12-15: Strong, directly demonstrated experience.
+    - 7-11: Credible transferable experience with gaps.
+    - 0-6: Limited supporting experience.
+    - Business ownership counts when responsibilities are
+      relevant, but organizational scale must not be inflated.
+
+    COMPENSATION (0-10):
+    - 8-10: Published compensation clearly supports the
+      candidate's stated target.
+    - 4-7: Partial overlap or uncertain compensation fit.
+    - 5: Compensation is undisclosed or genuinely unknown.
+    - 0-3: Published compensation falls below the target.
+    - Never assume an undisclosed salary is competitive.
+
+    GEOGRAPHY (0-10):
+    - 8-10: Location and work arrangement are confirmed fits.
+    - 5-7: Remote eligibility or relocation needs verification.
+    - 3-4: Significant relocation or logistical compromise.
+    - 0-2: Clear geographic or onsite mismatch.
+    - A remote label does not establish eligibility in every state.
+
+    MISSION AND TRAJECTORY (0-10):
+    - 8-10: Strong evidence of alignment with career goals.
+    - 4-7: Plausible but uncertain alignment.
+    - 0-3: Weak alignment or meaningful career tradeoffs.
+
+    EVIDENCE REQUIREMENTS:
+    - Base scoring on supplied profile and job evidence.
+    - Explain material category deductions in the reasoning.
+    - Treat unknowns consistently, without inventing facts.
+    - Return [] for hard_blockers when none are identified.
+    - Never insert explanatory text such as "None found"
+      into an otherwise empty blocker list.
+
     CRITICAL RULES:
     1. Never invent qualifications or accomplishments.
     2. Distinguish transferable from direct experience.

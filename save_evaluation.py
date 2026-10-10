@@ -1,4 +1,6 @@
-
+from contextlib import closing
+from decision_rules import decide_recommendation
+from blocker_utils import has_claimed_hard_blockers
 import json
 import sqlite3
 from pathlib import Path
@@ -6,15 +8,19 @@ from pathlib import Path
 from database import DB_PATH, initialize_database
 
 
-def save_evaluation():
-    # Load the previously saved AI evaluation.
-    file_path = Path(__file__).with_name(
-        "latest_evaluation.json"
-    )
 
-    data = json.loads(
-        file_path.read_text(encoding="utf-8")
-    )
+def save_evaluation(data=None):
+    # V1: Load an evaluation from the existing JSON file.
+    # V2: Accept an evaluation directly from Python.
+
+    if data is None:
+        file_path = Path(__file__).with_name(
+            "latest_evaluation.json"
+        )
+
+        data = json.loads(
+            file_path.read_text(encoding="utf-8")
+        )
 
     job = data["job"]
     analyst = data["initial_assessment"]
@@ -27,32 +33,49 @@ def save_evaluation():
         review["revised_scores"].values()
     )
 
-    # Treat AI-claimed blockers as unverified.
-    claimed_blockers = review["confirmed_hard_blockers"]
 
-    if reviewed_score < 60:
-        recommendation = "Skip"
-    elif claimed_blockers:
-        recommendation = "Hold"
-    elif reviewed_score < 70 and data["recommendation"] == "Apply":
-        recommendation = "Hold"
-    else:
-        recommendation = data["recommendation"]
+    # Track substantive blockers for database status.
+    claimed_blockers = has_claimed_hard_blockers(
+        review["confirmed_hard_blockers"]
+    )
+
+    # Use the same recommendation rules as the orchestrator.
+    recommendation = decide_recommendation(
+        reviewed_score=reviewed_score,
+        claimed_blockers=review["confirmed_hard_blockers"],
+        strategist_recommendation=data["strategy"]["recommendation"],
+    )
+
 
     # Keep the audit history.
+
     reviewer_notes = {
         "reasoning": review["review_reasoning"],
         "disputed_claims": review["disputed_claims"],
         "unresolved_questions": review["unresolved_questions"],
-        "original_recommendation": data["recommendation"],
-        "import_note": (
-            "Prior evaluation imported with uncapped scores. "
-            "AI-claimed blockers require independent verification. "
-            "Reevaluation under revised rules is pending."
+
+        # Preserve the application strategist's decision.
+        "strategy_recommendation": strategy.get("recommendation"),
+        "strategy_reason": strategy.get(
+            "recommendation_reason", ""
+        ),
+        "biggest_risks": strategy.get("biggest_risks", []),
+        "questions_to_verify": strategy.get(
+            "questions_to_verify", []
+        ),
+
+        # Record the recommendation after Python guardrails.
+        "final_recommendation": recommendation,
+
+        "verification_note": (
+            "AI assessments and claimed qualification gaps "
+            "require human verification."
         ),
     }
 
-    with sqlite3.connect(DB_PATH) as conn:
+
+    conn = sqlite3.connect(DB_PATH)
+    with closing(conn), conn:
         conn.execute("PRAGMA foreign_keys = ON")
 
         # Avoid importing the exact same posting twice.

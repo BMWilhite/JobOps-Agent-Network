@@ -1,4 +1,4 @@
-
+from decision_rules import decide_recommendation
 import json
 from pathlib import Path
 
@@ -94,24 +94,12 @@ def evaluate_job(raw_posting, profile_path=None):
         }),
     ).final_output
 
-  
-    # AI-identified blockers require verification.
-    blocker_review_required = bool(
-        review.confirmed_hard_blockers
+    # Apply consistent, testable recommendation rules.
+    decision = decide_recommendation(
+        reviewed_score=reviewed_score,
+        claimed_blockers=review.confirmed_hard_blockers,
+        strategist_recommendation=strategy.recommendation,
     )
-
-    if reviewed_score < 60:
-        decision = "Skip"
-
-    elif blocker_review_required:
-        decision = "Hold"
-
-    elif reviewed_score < 70 and plan.recommendation == "Apply":
-        decision = "Hold"
-
-    else:
-        decision = plan.recommendation
-
 
     return {
         "job": job.model_dump(),

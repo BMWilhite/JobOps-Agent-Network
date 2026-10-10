@@ -1,4 +1,4 @@
-
+from contextlib import closing
 import sqlite3
 from pathlib import Path
 
@@ -6,7 +6,10 @@ DB_PATH = Path(__file__).with_name("jobops.db")
 
 
 def initialize_database():
-    with sqlite3.connect(DB_PATH) as conn:
+
+    conn = sqlite3.connect(DB_PATH)
+    with closing(conn), conn:
+
         conn.execute("PRAGMA foreign_keys = ON")
 
         conn.executescript("""

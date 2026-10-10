@@ -156,7 +156,6 @@ The demo runs all four agents and writes example_evaluation.json.
 It does not modify the private job database. Running the agents
 requires OpenAI API credits.
 
-
 ## Local Setup
 
 Requirements:
