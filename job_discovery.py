@@ -114,9 +114,21 @@ def geographic_priority(job):
         "india",
         "germany",
         "france",
+        "pakistan",
+        "islamabad",
+        "lahore",
+        "mexico city",
+        "monterrey",
     )
 
-    if any(place in location for place in outside_us):
+    # Match complete location names, not partial words.
+    # For example, India must not match Indiana.
+    import re
+
+    if any(
+        re.search(rf"\b{re.escape(place)}\b", location)
+        for place in outside_us
+    ):
         return "Outside US - Review eligibility"
 
     if workplace == "remote":
