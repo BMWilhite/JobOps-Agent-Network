@@ -354,7 +354,7 @@ if __name__ == "__main__":
         print("\nNo new or previously unseen opportunities.")
         print("All currently eligible postings have been displayed.")
         print("\nShowing your existing application briefing...")
-        show_briefing()
+        show_briefing(len(new_candidates), min(10, len(candidates)))
         raise SystemExit(0)
 
     print("\n===== SELECT JOBS FOR AI EVALUATION =====")
@@ -366,7 +366,7 @@ if __name__ == "__main__":
 
     if not choices:
         print("\nNo AI evaluations selected.")
-        show_briefing()
+        show_briefing(len(new_candidates), min(10, len(candidates)))
         raise SystemExit(0)
 
     try:
@@ -414,7 +414,7 @@ if __name__ == "__main__":
     if confirmation.strip().lower() != "y":
         print("\nAI evaluations skipped.")
         print("Showing your existing application briefing...")
-        show_briefing()
+        show_briefing(len(new_candidates), min(10, len(candidates)))
         raise SystemExit(0)
 
     initialize_database()
@@ -439,4 +439,4 @@ if __name__ == "__main__":
             print("Continuing to next job...")
 
     print("\nBatch evaluation finished.")
-    show_briefing()
+    show_briefing(len(new_candidates), min(10, len(candidates)))
