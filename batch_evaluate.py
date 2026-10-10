@@ -240,18 +240,34 @@ def priority_score(candidate):
     ):
         score -= 3
 
-    # Explicit 8+ year experience requirements are a stretch.
+    # Penalize unusually high experience requirements.
     description_lines = (
         job.get("descriptionPlain") or ""
     ).casefold().splitlines()
 
-    if any(
-        re.search(
-            r"\b(?:8|9|1[0-9])\s*\+?\s*years?\b",
-            line,
+    required_experience_lines = [
+        line for line in description_lines
+        if "experience" in line
+        and not any(
+            optional in line
+            for optional in (
+                "preferred",
+                "nice to have",
+                "nice-to-have",
+                "bonus",
+                "a plus",
+            )
         )
-        and "experience" in line
-        for line in description_lines
+    ]
+
+    if any(
+        re.search(r"\b1[0-9]\s*\+?\s*years?\b", line)
+        for line in required_experience_lines
+    ):
+        score -= 10
+    elif any(
+        re.search(r"\b(?:8|9)\s*\+?\s*years?\b", line)
+        for line in required_experience_lines
     ):
         score -= 4
 
@@ -291,6 +307,23 @@ def priority_score(candidate):
         for line in requirements
     ):
         score -= 5
+    elif any(
+        "sql" in line
+        and any(
+            phrase in line
+            for phrase in (
+                "on your own",
+                "independently",
+                "ability to use sql",
+                "able to use sql",
+            )
+        )
+        and not any(
+            optional in line for optional in optional_signals
+        )
+        for line in requirements
+    ):
+        score -= 3
 
     # Discount specialized industry experience requirements.
     # Do not penalize optional or preferred qualifications.
