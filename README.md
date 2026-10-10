@@ -156,6 +156,46 @@ The demo runs all four agents and writes example_evaluation.json.
 It does not modify the private job database. Running the agents
 requires OpenAI API credits.
 
+## V2: Automated Job Discovery
+
+JobOps now supports job discovery from public Ashby and
+Greenhouse job boards.
+
+The discovery pipeline:
+1. Retrieves postings from configured company boards.
+2. Filters previously evaluated jobs using normalized URLs
+   and tracked job titles.
+3. Prioritizes opportunities using job title, location,
+   compensation, and travel-related signals.
+4. Presents a ranked shortlist for human review.
+5. Evaluates up to two selected jobs per batch, only after
+   explicit confirmation.
+6. Saves evaluations to SQLite and produces a briefing.
+
+Supported board configurations:
+- `boards.json` for Ashby
+- `greenhouse_boards.json` for Greenhouse
+
+Preview opportunities:
+
+    python batch_evaluate.py
+
+Discovery itself does not require OpenAI API calls.
+AI evaluation runs only after user confirmation and
+incurs API usage costs.
+
+View previously evaluated, unapplied opportunities:
+
+    python briefing.py
+
+Run the offline tests:
+
+    python test_save_audit.py
+    python test_decision_pipeline.py
+
+Both tests use fictional public example data and temporary
+databases. They do not modify the user's real job database.
+
 ## Local Setup
 
 Requirements:
@@ -209,7 +249,7 @@ Testing demonstrated:
 - Qualification classification is not always reliable.
 - Application recommendations require human judgment.
 - The system does not independently verify job availability.
-- Job postings are currently entered manually.
+- Discovery is limited to configured public job boards.
 - Application statuses require manual updates.
 - The latest JSON output is overwritten on each run.
 - The project is a local prototype, not a production service.
@@ -217,7 +257,7 @@ Testing demonstrated:
 ## Future Improvements
 
 - Better qualification and blocker classification
-- Automated job-posting ingestion
+- Expanded job-board coverage and discovery reliability
 - Score consistency testing
 - Job deduplication improvements
 - Application status management

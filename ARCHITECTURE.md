@@ -56,6 +56,54 @@ outputs, and a SQLite database.
          SQL Ranked Queue
 ```
 
+## V2: Job Discovery and Human Review
+
+V2 adds a discovery layer before the existing
+four-agent evaluation pipeline.
+
+### Discovery Sources
+
+- `job_discovery.py` retrieves public Ashby postings.
+- `greenhouse_discovery.py` retrieves public Greenhouse
+  postings and normalizes their content.
+- `boards.json` configures Ashby company boards.
+- `greenhouse_boards.json` configures Greenhouse boards.
+
+### Discovery Workflow
+
+`batch_evaluate.py` coordinates the discovery workflow:
+
+1. Fetch postings from configured public job boards.
+2. Normalize job information across sources.
+3. Exclude previously evaluated jobs using normalized
+   posting URLs and tracked job titles.
+4. Filter and prioritize opportunities using role,
+   geography, compensation, and travel-related signals.
+5. Display a ranked shortlist for human review.
+6. Let the user select up to two jobs.
+7. Require explicit confirmation before AI evaluation.
+8. Run the four-agent evaluation workflow.
+9. Save results to SQLite and display the briefing.
+
+Discovery and ranking do not require OpenAI API calls.
+AI evaluation incurs usage costs only after confirmation.
+
+### Decision Support
+
+- `decision_rules.py` applies deterministic final
+  recommendation rules.
+- `blocker_utils.py` normalizes blocker claims.
+- `briefing.py` summarizes unapplied opportunities.
+- `test_save_audit.py` verifies database persistence.
+- `test_decision_pipeline.py` checks Apply, Hold, and Skip
+  behavior using fictional public test data.
+
+The system does not automatically submit applications.
+Its job rankings and AI assessments require human review.
+
+The existing manual job-evaluation workflow remains
+available alongside automated discovery.
+
 ## 1. Orchestration Design
 
 The system uses code-managed orchestration.
@@ -299,7 +347,7 @@ They enforce data structure, not factual accuracy.
 
 ## 8. Known Limitations
 
-- No automated job discovery.
+- Discovery covers configured public Ashby and Greenhouse boards, not the entire job market.
 - No automatic application submission.
 - No production deployment.
 - No formal benchmark proving review accuracy.
@@ -308,7 +356,7 @@ They enforce data structure, not factual accuracy.
 - The application status is initially set
   to Not Applied, regardless of real history.
 - The latest JSON file is overwritten.
-- Job deduplication uses exact matching.
+- Discovery deduplicates by normalized posting URL and tracked title; database import uses separate matching rules.
 - AI usage requires API credits.
 - Manual review remains necessary.
 
@@ -320,13 +368,13 @@ Potential improvements include:
 - Better hard-blocker verification
 - Scoring consistency tests
 - Resume generation
-- Automated job ingestion
+- Broader job-board coverage and improved discovery filtering
 - Application status editing
 - Cost and token tracking
 - Optional Streamlit dashboard
 
-These are future improvements, not existing V1
-features.
+These improvements are planned rather than
+currently implemented features.
 
 ## 10. Engineering Lessons
 
