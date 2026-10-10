@@ -130,9 +130,21 @@ def find_candidates():
             location = job["location"].casefold()
 
             # A nationwide location does not prove remote work.
-            if location.strip() in ("united states", "usa", "us"):
+            description = (
+                job.get("descriptionPlain") or ""
+            ).casefold()
 
-                geography = "Work arrangement unknown - Verify"
+            explicit_us_remote = (
+                "this is a remote role" in description
+                and "candidates located in the united states"
+                in description
+            )
+
+            if location.strip() in ("united states", "usa", "us"):
+                if explicit_us_remote:
+                    geography = "Preferred - US remote (verify states)"
+                else:
+                    geography = "Work arrangement unknown - Verify"
             else:
                 geography = geographic_priority(job)
 
@@ -400,26 +412,61 @@ if __name__ == "__main__":
     )
 
 
-    # Daily shortlist includes only jobs not previously shown.
-    # Previously displayed jobs remain saved in SQLite.
-    candidates = new_candidates + undisplayed_candidates
+    # Group unseen jobs by geographic confidence.
+    unseen_candidates = new_candidates + undisplayed_candidates
+
+    us_prefixes = (
+        "Preferred - US remote",
+        "Preferred - Arizona",
+        "Relocation Option - Oregon",
+        "Relocation Option - Washington",
+    )
+
+    us_indicated = [
+        candidate for candidate in unseen_candidates
+        if candidate[2].startswith(us_prefixes)
+    ]
+
+    needs_verification = [
+        candidate for candidate in unseen_candidates
+        if not candidate[2].startswith(us_prefixes)
+    ]
+
+    candidates = us_indicated + needs_verification
+
+    # Preserve NEW labels after reordering the shortlist.
+    new_urls = {
+        normalize_posting_url(
+            job.get("jobUrl") or job.get("applyUrl")
+        )
+        for _, job, _, _ in new_candidates
+    }
 
     # Free discovery preview before any AI evaluations.
     print("\n===== UNSEEN OPPORTUNITIES (UP TO 10) =====")
 
+    print("US-indicated unseen:", len(us_indicated))
+    print("Needs location verification:", len(needs_verification))
+
     for rank, candidate in enumerate(candidates[:10], start=1):
         company, job, geography, travel = candidate
 
+        if rank == 1 or rank == len(us_indicated) + 1:
+            group = (
+                "US-INDICATED"
+                if rank <= len(us_indicated)
+                else "NEEDS LOCATION VERIFICATION"
+            )
+            print(f"\n--- {group} ---")
+
         print(f"\n{rank}. {company} - {job.get('title')}")
 
-        if rank <= len(new_candidates):
+        posting_url = job.get("jobUrl") or job.get("applyUrl")
+
+        if normalize_posting_url(posting_url) in new_urls:
             status = "NEW TO JOBOPS"
-        elif rank <= (
-            len(new_candidates) + len(undisplayed_candidates)
-        ):
-            status = "NOT YET DISPLAYED"
         else:
-            status = "Previously displayed"
+            status = "NOT YET DISPLAYED"
 
         print(f"   Discovery: {status}")
         print(f"   Compensation: {compensation_priority(job)}")
