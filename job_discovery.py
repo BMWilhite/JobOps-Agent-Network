@@ -1,7 +1,7 @@
 
 import json
 from urllib.request import Request, urlopen
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 
 import sqlite3
 from pathlib import Path
@@ -48,7 +48,11 @@ def normalize_posting_url(url):
     if path.endswith("/application"):
         path = path[:-len("/application")]
 
-    return f"{domain}{path}"
+    # Custom Greenhouse career pages can distinguish postings only by gh_jid.
+    # Remove tracking fields without merging those different jobs.
+    posting_ids = parse_qs(parsed.query).get("gh_jid", [])
+    identity_query = f"?gh_jid={posting_ids[0]}" if posting_ids else ""
+    return f"{domain}{path}{identity_query}"
 
 
 def get_tracked_posting_urls():

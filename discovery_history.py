@@ -60,6 +60,7 @@ def record_discovered_job(connection, company, job):
         """,
         (company, title, normalized_url),
     )
+    return False
 
 def classify_discovered_candidates(connection, candidates):
     """Separate newly discovered postings from previously seen ones."""
@@ -82,8 +83,6 @@ def classify_discovered_candidates(connection, candidates):
             seen_candidates.append(candidate)
 
     return new_candidates, seen_candidates
-
-    return False
 
 def record_displayed_job(connection, job):
     """Record when a job is first shown to the user."""

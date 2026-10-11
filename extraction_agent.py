@@ -2,6 +2,7 @@
 from typing import Literal
 from pydantic import BaseModel
 from agents import Agent, Runner
+from ai_runtime import private_run_config
 
 
 # Define the exact information the agent must return.
@@ -90,12 +91,15 @@ Tools:
 
 
 if __name__ == "__main__":
+    if input("Run one paid OpenAI call? Type EVALUATE to approve: ").strip() != "EVALUATE":
+        raise SystemExit("Cancelled. No API calls made.")
     print("Running Job Extraction Agent...\n")
 
     try:
         result = Runner.run_sync(
             extraction_agent,
             sample_job,
+            run_config=private_run_config(),
         )
 
         print(result.final_output.model_dump_json(indent=2))

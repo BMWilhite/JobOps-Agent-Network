@@ -7,54 +7,88 @@ JobOps is a locally executed, multi-agent AI workflow
 for evaluating job opportunities against a candidate's
 career experience and preferences.
 
-The system uses four specialized OpenAI Agents SDK
-agents, a Python orchestrator, structured Pydantic
-outputs, and a SQLite database.
+The implemented MVP combines a Streamlit dashboard, public-board discovery,
+source-ID qualification screening, feedback, and editable Word application
+packages with the original four-agent CLI workflow. Python manages execution,
+Pydantic structures responses, and SQLite stores local history. Paid requests
+require explicit user approval; generated drafts require human review.
 
 ## Architecture Diagram
 
 ```text
-         Raw Job Posting
-                |
-                v
-      +-------------------+
-      | Extraction Agent  |
-      | Structure the job |
-      +-------------------+
-                |
-                v
-      +-------------------+
-      | Fit Analyst       |
-      | Initial scoring   |<--- Candidate Profile
-      +-------------------+
-                |
-                v
-      +-------------------+
-      | Skeptical Reviewer|
-      | Audit and revise  |<--- Candidate Profile
-      +-------------------+
-                |
-                v
-      +-------------------+
-      | Application       |
-      | Strategist        |<--- Candidate Profile
-      +-------------------+
-                |
-                v
-      +-------------------+
-      | Python Validation |
-      | Decision Rules    |
-      +-------------------+
-                |
-                v
-       JSON Evaluation File
-                |
-                v
-         SQLite Database
-                |
-                v
-         SQL Ranked Queue
+Public job boards -> discovery/ranking -> mvp_jobs <-> Streamlit dashboard
+Private profile -> deterministic evidence catalog       |
+                                                       +-> free local preview
+Selected posting + explicit approval + catalog          |
+    -> qualification agent -> ID/requirement validation -> mvp_screenings
+    -> application selection agent -> profile validation -> Python rendering
+         -> Markdown / DOCX / source provenance -> human review
+Dashboard corrections -> mvp_feedback -> local diagnostic downloads
+Generated package folder references -> mvp_packages
+
+Original CLI workflow (separate approval):
+Posting + profile -> extraction -> fit analyst -> skeptical reviewer
+    -> application strategist -> Python decision rules
+    -> latest evaluation JSON -> jobs / evaluations / applications
+    -> SQL ranked queue and briefing
 ```
+
+## Implemented Dashboard and Source Evidence
+
+`streamlit_app.py` presents a fixed-height opportunity list and a selected-job
+panel with Requirements, AI Assessment, Feedback, and Application tabs. Search,
+geographic and classification filters distinguish discovered, unscreened, current
+AI-screened, and historical results. Unscreened postings are not recommendations.
+Dismiss, reject, and restore actions preserve history.
+
+`candidate_evidence.py` creates deterministic paragraph/bullet IDs and source
+context from the supplied profile. IDs are scoped to the profile snapshot and
+catalog version. Aspirations, skills, employment, and documented achievements
+have distinct evidence kinds; the profile's claims are not independently verified.
+
+`qualification_agent.py` passes this catalog and full selected descriptions to
+one approved model request, for up to five jobs. The model returns exact job IDs,
+posting requirement excerpts, candidate evidence IDs, and structured assessments.
+Python resolves candidate text from the catalog, validates job identity and
+posting excerpts, and applies classification rules. It never trusts a
+model-written candidate quotation as source evidence. Missing evidence remains
+unknown with verification questions. Specialized requirements require direct
+evidence; transferable skills and preferred qualifications do not establish
+mandatory specialized experience. Safe independent results survive partial
+batch failures; missing, duplicate, or invalid results remain unscreened.
+
+`jobops_service.py` enforces approval at the paid boundary and reuses valid
+cached results. Cache keys include the posting, profile, model, rule version and
+catalog version, preserving older history without confusing evidence formats.
+UI approval is consumed per submission and bound to the selected batch. Paid
+requests are not automatically retried. `ai_runtime.py` disables hosted tracing,
+Responses storage, and SDK retries; this is not a zero-retention promise.
+
+Feedback saves corrections and assessment snapshots. `feedback_report.py`
+produces local diagnostics and regression-case drafts without AI calls or code
+changes. Reports can contain private evidence and require sanitization before
+sharing.
+
+`application_documents.py` defines the source-selection response schema. The
+writer selects verified profile IDs and content-unit indices. `application_evidence.py`
+and `application_rendering.py` validate selections against that profile snapshot
+before export, then render source-grounded facts, actual employment fields,
+separate project work, estimate qualifiers, and contact details or placeholders.
+Internal guidance and IDs are excluded from employer-facing text. The cover
+letter uses a Python-owned template with source-grounded examples and posting
+context. It still needs editorial review; source grounding is not a guarantee
+of persuasive writing or qualification accuracy.
+
+`generate_application.py` exports each approved package to a new folder outside
+the repository, including Markdown, a verification checklist, source provenance,
+and editable DOCX files through `word_export.py`. Export completes before the
+package is published locally. No automatic applications or messages are sent.
+Review claims, dates, metrics, contact placeholders, and layout before submission.
+
+Public candidate/job examples, evaluation examples, and candidate test fixtures
+are fictional. Private profiles, local databases, credentials, generated
+applications, and personal reports must remain excluded from Git. Ignoring a
+file does not untrack it or remove it from existing history.
 
 ## V2: Job Discovery and Human Review
 
@@ -256,7 +290,8 @@ of recruitment success.
 File: database.py
 Database: jobops.db
 
-The database contains three tables.
+The original CLI uses the following three tables. `jobops_store.py` adds four
+MVP tables to the same local database without rewriting the original records.
 
 ### jobs
 Stores job descriptions and extracted information.
@@ -275,7 +310,19 @@ Stores application status, dates, and notes.
 Primary key: id
 Foreign key: job_id -> jobs.id
 
-The job ID connects records across the tables.
+The job ID connects records across the original tables. Dashboard tables use
+stable posting IDs, with additive initialization:
+
+| Table | Purpose |
+|---|---|
+| `mvp_jobs` | Posting payloads, discovery timestamps, displayed state, dispositions and reevaluation requests |
+| `mvp_screenings` | Local/AI snapshots, cache keys and screening history |
+| `mvp_feedback` | Corrections, expected classifications, source snapshots and diagnostic reports |
+| `mvp_packages` | Job associations and external package folder paths |
+
+An index supports screening-cache lookup. Legacy jobs and their latest evaluations
+are imported as dashboard views while their original rows remain intact. Full
+application documents stay outside the repository in private output folders.
 
 ## 5. Persistence
 
@@ -367,14 +414,11 @@ Potential improvements include:
 - Structured qualification confidence levels
 - Better hard-blocker verification
 - Scoring consistency tests
-- Resume generation
 - Broader job-board coverage and improved discovery filtering
-- Application status editing
+- Submitted-application status editing
 - Cost and token tracking
-- Optional Streamlit dashboard
 
-These improvements are planned rather than
-currently implemented features.
+These remaining ideas are outside the implemented MVP scope.
 
 ## 10. Engineering Lessons
 

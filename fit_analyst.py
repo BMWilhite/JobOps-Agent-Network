@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from agents import Agent, Runner
+from ai_runtime import private_run_config
 from pydantic import BaseModel
 
 from extraction_agent import extraction_agent, sample_job
@@ -129,11 +130,14 @@ fit_analyst = Agent(
 
 
 if __name__ == "__main__":
+    if input("Run two paid OpenAI calls with the candidate profile? Type EVALUATE to approve: ").strip() != "EVALUATE":
+        raise SystemExit("Cancelled. No API calls made.")
     print("Step 1: Extracting job information...")
 
     extraction_result = Runner.run_sync(
         extraction_agent,
         sample_job,
+        run_config=private_run_config(),
     )
 
     extracted_job = extraction_result.final_output
@@ -157,6 +161,7 @@ if __name__ == "__main__":
     result = Runner.run_sync(
         fit_analyst,
         analyst_input,
+        run_config=private_run_config(),
     )
 
     assessment = result.final_output

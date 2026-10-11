@@ -29,3 +29,59 @@ latest_evaluation.json
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Private feedback, exports, and application packages
+private/
+applications/
+feedback_reports/
+*.docx
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+jobops_diagnostic*.json
+jobops_regression_draft*.json
+source_evidence.json
+
+# Local application output locations and reserved generated filenames
+/JobOps Applications/
+generated_applications/
+application_outputs/
+offline_previews/
+*_Offline_Preview*/
+.jobops-*/
+.Stedi_*_staging_*/
+/resume.md
+/cover_letter.md
+/verification_checklist.md
+/application_link.txt
+reconstructed_selection.json
+offline_preview_report.json
+stored_stedi_posting.txt
+
+# Local credentials; public examples and general JSON/TOML remain visible
+.streamlit/secrets.toml
+credentials.json
+credentials.local.*
+api_key.txt
+api_keys.txt
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Disposable local artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.tmp
+*.temp
+*.swp
+*.swo
+~$*

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Literal
 
 from agents import Agent, Runner
+from ai_runtime import private_run_config
 from pydantic import BaseModel
 
 from extraction_agent import extraction_agent, sample_job
@@ -94,6 +95,8 @@ application_strategist = Agent(
 
 
 if __name__ == "__main__":
+    if input("Run four paid OpenAI calls with the candidate profile? Type EVALUATE to approve: ").strip() != "EVALUATE":
+        raise SystemExit("Cancelled. No API calls made.")
 
     profile = Path(__file__).with_name(
         "candidate_profile.md"
@@ -101,7 +104,7 @@ if __name__ == "__main__":
 
     print("1. Extracting job...")
     job = Runner.run_sync(
-        extraction_agent, sample_job
+        extraction_agent, sample_job, run_config=private_run_config()
     ).final_output
 
     print("2. Evaluating fit...")
@@ -111,6 +114,7 @@ if __name__ == "__main__":
             "candidate_profile": profile,
             "job": job.model_dump(),
         }),
+        run_config=private_run_config(),
     ).final_output
 
     print("3. Auditing assessment...")
@@ -121,6 +125,7 @@ if __name__ == "__main__":
             "job": job.model_dump(),
             "initial_assessment": assessment.model_dump(),
         }),
+        run_config=private_run_config(),
     ).final_output
 
     # Verify score categories before calculating totals.
@@ -163,6 +168,7 @@ if __name__ == "__main__":
     plan = Runner.run_sync(
         application_strategist,
         strategy_input,
+        run_config=private_run_config(),
     ).final_output
 
     # Enforce minimum decision rules in Python.

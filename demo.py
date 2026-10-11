@@ -19,9 +19,12 @@ def run_demo():
     print("Starting fictional JobOps demonstration...\n")
 
     # Run four agents using the fictional profile.
+    if input("Run four paid AI agents? Type EVALUATE to approve: ").strip() != "EVALUATE":
+        return
     result = evaluate_job(
         posting,
         profile_path=profile_path,
+        approved=True,
     )
 
     # Save public example output.

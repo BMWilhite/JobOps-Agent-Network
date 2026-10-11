@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from agents import Runner
+from ai_runtime import private_run_config
 
 from save_evaluation import save_evaluation
 
@@ -40,9 +41,11 @@ def calculate_score(scores):
     return total
 
 
-def evaluate_job(raw_posting, profile_path=None):
+def evaluate_job(raw_posting, profile_path=None, *, approved=False):
     """Run the complete four-agent evaluation workflow."""
 
+    if not approved:
+        raise PermissionError("Paid evaluation requires explicit approval.")
     if profile_path is None:
         profile_path = Path(__file__).with_name(
             "candidate_profile.md"
@@ -57,6 +60,7 @@ def evaluate_job(raw_posting, profile_path=None):
     job = Runner.run_sync(
         extraction_agent,
         raw_posting,
+        run_config=private_run_config(),
     ).final_output
 
     print("2/4 Analyzing candidate fit...")
@@ -66,6 +70,7 @@ def evaluate_job(raw_posting, profile_path=None):
             "candidate_profile": profile,
             "job": job.model_dump(),
         }),
+        run_config=private_run_config(),
     ).final_output
 
     initial_score = calculate_score(assessment.scores)
@@ -78,6 +83,7 @@ def evaluate_job(raw_posting, profile_path=None):
             "job": job.model_dump(),
             "initial_assessment": assessment.model_dump(),
         }),
+        run_config=private_run_config(),
     ).final_output
 
     reviewed_score = calculate_score(review.revised_scores)
@@ -92,13 +98,14 @@ def evaluate_job(raw_posting, profile_path=None):
             "skeptical_review": review.model_dump(),
             "reviewed_score": reviewed_score,
         }),
+        run_config=private_run_config(),
     ).final_output
 
     # Apply consistent, testable recommendation rules.
     decision = decide_recommendation(
         reviewed_score=reviewed_score,
         claimed_blockers=review.confirmed_hard_blockers,
-        strategist_recommendation=strategy.recommendation,
+        strategist_recommendation=plan.recommendation,
     )
 
     return {
@@ -130,7 +137,9 @@ if __name__ == "__main__":
     print("Starting JobOps evaluation...\n")
 
     # Run the complete four-agent workflow.
-    result = evaluate_job(raw_posting)
+    if input("Run four paid AI agents? Type EVALUATE to approve: ").strip() != "EVALUATE":
+        raise SystemExit("Cancelled. No API calls made.")
+    result = evaluate_job(raw_posting, approved=True)
 
     # Preserve the original posting for SQLite.
     result["raw_posting"] = raw_posting
@@ -146,7 +155,9 @@ if __name__ == "__main__":
     )
 
     # Automatically store the evaluation in SQLite.
-    save_evaluation()
+    from database import initialize_database
+    initialize_database()
+    save_evaluation(result)
 
     # Display a concise summary.
     job = result["job"]

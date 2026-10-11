@@ -36,7 +36,7 @@ if __name__ == "__main__":
     if confirmation.strip().lower() != "y":
         raise SystemExit("Evaluation cancelled.")
 
-    result = evaluate_job(posting)
+    result = evaluate_job(posting, approved=True)
 
     # Preserve the original posting for our database.
     result["raw_posting"] = posting

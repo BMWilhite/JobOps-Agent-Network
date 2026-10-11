@@ -43,7 +43,82 @@ ROLE_KEYWORDS = (
 )
 
 
-def find_candidates():
+
+def qualification_screen_reasons(job):
+    """Identify clusters of unusually specialized mandatory requirements.
+
+    This is conservative preliminary screening, not a definitive
+    judgment about an applicant's qualifications.
+    """
+    description = job.get("descriptionPlain") or ""
+
+    lines = [
+        line.strip().casefold().lstrip("-*? ")
+        for line in description.splitlines()
+        if line.strip()
+    ]
+
+    optional_markers = (
+        "preferred",
+        "nice to have",
+        "nice-to-have",
+        "a plus",
+        "bonus qualification",
+    )
+
+    required = [
+        line for line in lines
+        if not any(marker in line for marker in optional_markers)
+    ]
+
+    reasons = []
+
+    specialized_background = any(
+        re.search(r"\b(?:[5-9]|1[0-9])\s*\+?\s*years?\b", line)
+        and "saas" in line
+        and any(
+            term in line
+            for term in ("consulting", "banking", "private equity")
+        )
+        for line in required
+    )
+
+    if specialized_background:
+        reasons.append(
+            "5+ years combining consulting/finance and SaaS experience"
+        )
+
+    hypergrowth_background = any(
+        "experience" in line
+        and "saas" in line
+        and any(
+            term in line
+            for term in (
+                "hypergrowth",
+                "hyper-growth",
+                "high-growth",
+                "rapidly scaling",
+            )
+        )
+        for line in required
+    )
+
+    if hypergrowth_background:
+        reasons.append("Prior hypergrowth SaaS experience")
+
+    expert_spreadsheets = any(
+        "expert" in line
+        and any(term in line for term in ("excel", "google sheets"))
+        for line in required
+    )
+
+    if expert_spreadsheets:
+        reasons.append("Expert-level spreadsheet proficiency")
+
+    return reasons
+
+
+def find_candidates(*, include_tracked=False, include_filtered=False, warnings=None):
     """Find new jobs worth considering for AI evaluation."""
 
     boards_path = Path(__file__).with_name("boards.json")
@@ -53,16 +128,16 @@ def find_candidates():
 
     candidates = []
 
-    tracked_urls = get_tracked_posting_urls()
+    tracked_urls = set() if include_tracked else get_tracked_posting_urls()
 
     for company, board_name in boards.items():
         try:
             jobs = fetch_ashby_jobs(board_name)
         except Exception as error:
             print(f"Skipped {company}: {error}")
+            if warnings is not None:
+                warnings.append(f"Ashby: {company} is unavailable. Previous jobs retained.")
             continue
-
-        tracked_titles = get_tracked_titles(company)
 
         for job in jobs:
             title = (job.get("title") or "").strip().casefold()
@@ -76,21 +151,23 @@ def find_candidates():
             if not any(word in title for word in ROLE_KEYWORDS):
                 continue
 
-            if title in tracked_titles:
-                continue
-
             geography = geographic_priority(job)
             travel = travel_priority(job)
 
-            if geography.startswith((
+            if not include_filtered and geography.startswith((
                 "Outside US",
                 "Location-restricted",
                 "Special Relocation",
             )):
                 continue
 
-            if travel.startswith("High travel"):
+            if not include_filtered and travel.startswith("High travel"):
                 continue
+
+            # Screen out clusters of highly specialized requirements.
+            qualification_risks = qualification_screen_reasons(job)
+
+            job["preliminary_qualification_risks"] = qualification_risks
 
             candidates.append((company, job, geography, travel))
 
@@ -109,9 +186,9 @@ def find_candidates():
             greenhouse_jobs = fetch_greenhouse_jobs(board_name)
         except Exception as error:
             print(f"Skipped Greenhouse {company}: {error}")
+            if warnings is not None:
+                warnings.append(f"Greenhouse: {company} is unavailable. Previous jobs retained.")
             continue
-
-        tracked_titles = get_tracked_titles(company)
 
         for original in greenhouse_jobs:
             job = normalize_greenhouse_job(original)
@@ -122,9 +199,6 @@ def find_candidates():
             title = job["title"].strip().casefold()
 
             if not any(word in title for word in ROLE_KEYWORDS):
-                continue
-
-            if title in tracked_titles:
                 continue
 
             location = job["location"].casefold()
@@ -148,7 +222,7 @@ def find_candidates():
             else:
                 geography = geographic_priority(job)
 
-            if geography.startswith((
+            if not include_filtered and geography.startswith((
                 "Outside US",
                 "Location-restricted",
                 "Special Relocation",
@@ -157,8 +231,13 @@ def find_candidates():
 
             travel = travel_priority(job)
 
-            if travel.startswith("High travel"):
+            if not include_filtered and travel.startswith("High travel"):
                 continue
+
+            # Screen out clusters of highly specialized requirements.
+            qualification_risks = qualification_screen_reasons(job)
+
+            job["preliminary_qualification_risks"] = qualification_risks
 
             candidates.append((company, job, geography, travel))
 
@@ -504,9 +583,70 @@ if __name__ == "__main__":
     print("\n===== SELECT JOBS FOR AI EVALUATION =====")
     print("Choose up to 2 jobs from the Top 10.")
     print("Example: 1,4")
+    print("Type D to generate application documents for one job.")
     print("Press Enter to skip paid evaluations.")
 
     choices = input("\nYour selection: ").strip()
+
+    if choices.upper() == "D":
+        import subprocess
+        import sys
+        from tempfile import TemporaryDirectory
+
+        selection = input(
+            "Job number for documents: "
+        ).strip()
+
+        if not selection.isdecimal():
+            raise SystemExit("Enter a valid job number.")
+
+        number = int(selection)
+
+        if not 1 <= number <= min(10, len(candidates)):
+            raise SystemExit("Job number is outside the shortlist.")
+
+        company, job, geography, travel = candidates[number - 1]
+
+        print("\n===== APPLICATION DOCUMENT PREVIEW =====")
+        print("Company:", company)
+        print("Position:", job["title"])
+        print("Geography:", geography)
+
+        application_url = (
+            job.get("applyUrl")
+            or job.get("jobUrl")
+            or ""
+        )
+
+        print("Application link:", application_url or "Unavailable")
+
+        with TemporaryDirectory(prefix="jobops_application_") as folder:
+            posting_file = Path(folder) / "selected_posting.txt"
+            posting_file.write_text(
+                format_job_for_evaluation(company, job),
+                encoding="utf-8",
+            )
+
+            command = [
+                sys.executable,
+                str(
+                    Path(__file__).with_name(
+                        "generate_application.py"
+                    )
+                ),
+                "--posting-file",
+                str(posting_file),
+                "--application-url",
+                application_url,
+                "--generate",
+            ]
+
+            completed = subprocess.run(command, check=False)
+
+            if completed.returncode != 0:
+                raise SystemExit(completed.returncode)
+
+        raise SystemExit(0)
 
     if not choices:
         print("\nNo AI evaluations selected.")
@@ -569,7 +709,7 @@ if __name__ == "__main__":
         try:
             posting = format_job_for_evaluation(company, job)
 
-            result = evaluate_job(posting)
+            result = evaluate_job(posting, approved=True)
             result["raw_posting"] = posting
 
             save_evaluation(result)
